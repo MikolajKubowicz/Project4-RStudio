@@ -1,0 +1,111 @@
+---
+title: "R Notebook"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+```{r}
+df = read.csv("C:\\Users\\mikol\\Downloads\\ames_alcohol_test1.csv")
+df
+```
+```{r}
+install.packages("tidyverse")
+library(tidyverse)
+```
+```{r}
+library(dplyr)
+```
+
+
+```{r}
+dim(df)
+```
+```{r}
+the_years = unique(df$year)
+the_years
+```
+```{r}
+ames_data <- read.csv("C:\\Users\\mikol\\Downloads\\ames_alcohol_test1.csv")
+year_counts <- table(ames_data$year)
+most_data <- names(which.max(year_counts))
+most_data
+
+```
+```{r}
+counts_police = table(df$location)
+busy_police = names(which.max(counts_police))
+busy_police
+
+```
+```{r}
+count_time = table(df$hour)
+most_hour = names(which.max(count_time))
+count_time
+```
+
+```{r}
+tests_jan_to_mar_2017 = subset(df, year == 2017 & month >= 1 & month <= 3)
+num_tests_jan_to_mar_2017 = nrow(tests_jan_to_mar_2017)
+num_tests_jan_to_mar_2017
+```
+```{r}
+most_common_month <- df %>%
+  group_by(year, month) %>%
+  summarise(count = n()) %>%
+  arrange(year, desc(count)) %>%
+  slice_head(n = 1)
+
+# Print the result
+print(most_common_month)
+```
+
+
+```{r}
+sex_counts <- table(df$sex)
+print(sex_counts)
+```
+
+
+```{r}
+df_clean <- subset(df, !is.na(sex))
+df_clean$Res <- (as.numeric(df_clean$Res1) + as.numeric(df_clean$Res2)) / 2
+average_res_by_sex <- aggregate(Res ~ sex, data = df_clean, mean)
+print(average_res_by_sex)
+```
+
+```{r}
+df_clean <- subset(df, !is.na(sex))
+dui_count <- nrow(subset(df_clean, as.numeric(Res1) > 0.08 | as.numeric(Res2) > 0.08))
+total_people <- nrow(df_clean)
+dui_percentage <- (dui_count / total_people) * 100
+print(dui_percentage)
+```
+
+```{r}
+df_clean <- df %>% filter(!is.na(sex))
+dui_cases <- df_clean %>% filter(as.numeric(Res1) > 0.08 | as.numeric(Res2) > 0.08)
+dui_count <- nrow(dui_cases)
+total_people <- nrow(df_clean)
+dui_percentage <- (dui_count / total_people) * 100
+print(dui_percentage)
+```
+
+```{r}
+df_clean <- df %>% filter(!is.na(sex))  # First, clean the data to remove missing 'sex' values
+zero_bac_cases <- df_clean %>% filter(as.numeric(Res1) == 0 | as.numeric(Res2) == 0)
+zero_bac_count <- nrow(zero_bac_cases)
+total_people <- nrow(df_clean)
+zero_bac_percentage <- (zero_bac_count / total_people) * 100
+print(zero_bac_percentage)
+```
+
+```{r}
+df_clean <- df %>% filter(!is.na(sex))
+df_clean <- df_clean %>% mutate(dui = ifelse(as.numeric(Res1) > 0.08 | as.numeric(Res2) > 0.08, 1, 0))
+dui_percentage_by_month <- df_clean %>%
+  group_by(month) %>%
+  summarise(dui_percentage = sum(dui) / n() * 100)
+dui_percentage_by_month_sorted <- dui_percentage_by_month %>% arrange(desc(dui_percentage))
+print(dui_percentage_by_month_sorted[1:4, ])
+```
+
